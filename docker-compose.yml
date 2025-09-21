@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mircrew-smart:
+    image: mircrew-smart-indexer:latest
+    container_name: mircrew-smart
+    user: "1001:1001"
+    ports:
+      - "9898:9898"
+    environment:
+      - MIRCREW_BASE_URL=https://mircrew-releases.org
+      - MIRCREW_USERNAME=${MIRCREW_USERNAME}
+      - MIRCREW_PASSWORD=${MIRCREW_PASSWORD}
+      - SONARR_URL=http://sonarr:8989
+      - SONARR_API_KEY=${SONARR_API_KEY}
+      - PORT=9898
+    volumes:
+      - /opt/mircrew-smart-indexer/config:/config
+      - /opt/mircrew-smart-indexer/logs:/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9898/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  mircrew_smart_config:
+    driver: local
+
+networks:
+  default:
+    name: saltbox
+    external: true
