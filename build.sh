@@ -45,17 +45,28 @@ check_docker() {
     log_info "Docker è attivo e accessibile"
 }
 
-# Funzione per controllare se i file necessari esistono
+# Funzione per controllare se i file e le directory necessarie esistono
 check_files() {
-    local required_files=("Dockerfile" "mircrew_smart_indexer.py")
+    local required_files=("Dockerfile" "app.py")
+    local required_dirs=("config" "indexer" "models" "services" "utils")
     
+    # Controlla file principali
     for file in "${required_files[@]}"; do
         if [[ ! -f "$file" ]]; then
             log_error "File richiesto non trovato: $file"
             exit 1
         fi
     done
-    log_info "Tutti i file richiesti sono presenti"
+    
+    # Controlla directory principali
+    for dir in "${required_dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            log_error "Directory richiesta non trovata: $dir"
+            exit 1
+        fi
+    done
+    
+    log_info "Tutti i file e directory richiesti sono presenti"
 }
 
 # Funzione per fare build dell'immagine Docker
@@ -137,11 +148,32 @@ show_image_info() {
 verify_image() {
     log_info "Verifica immagine..."
     
-    # Test rapido dell'immagine
+    # Test rapido dell'immagine - verifica dipendenze principali
     if docker run --rm "$FULL_IMAGE_NAME" python -c "import flask, requests, bs4; print('Dipendenze OK')" >/dev/null 2>&1; then
         log_success "Immagine verificata: dipendenze Python corrette"
     else
         log_warning "Verifica immagine fallita - controllare il Dockerfile"
+        return 1
+    fi
+    
+    # Test della struttura dell'applicazione
+    if docker run --rm "$FULL_IMAGE_NAME" python -c "
+import sys, os
+sys.path.append('/app')
+try:
+    # Test import delle componenti principali
+    from config import settings
+    from services import indexer_service
+    from models import episode, search_result
+    from utils import helpers
+    print('Struttura applicazione OK')
+except ImportError as e:
+    print(f'Errore import: {e}')
+    sys.exit(1)
+" >/dev/null 2>&1; then
+        log_success "Struttura applicazione verificata"
+    else
+        log_warning "Verifica struttura applicazione fallita - alcuni moduli potrebbero non essere importabili"
     fi
 }
 
@@ -165,6 +197,15 @@ show_help() {
     echo "  $0 export                    # Crea file tar per trasferimento"
     echo "  $0 import image.tar          # Importa da file tar"
     echo "  $0 info                      # Mostra dettagli immagine"
+    echo
+    echo "STRUTTURA PROGETTO RICHIESTA:"
+    echo "  ├── app.py                   # Entry point applicazione"
+    echo "  ├── Dockerfile               # Configurazione Docker"
+    echo "  ├── config/                  # Configurazioni"
+    echo "  ├── indexer/                 # Logica indexer"
+    echo "  ├── models/                  # Modelli dati"
+    echo "  ├── services/                # Servizi business logic"
+    echo "  └── utils/                   # Utility e helpers"
     echo
     echo "FLUSSO TIPICO:"
     echo "  1. $0 build                  # Build locale"
