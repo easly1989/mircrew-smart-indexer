@@ -1,1 +1,267 @@
+# =============================================================================
+# .gitignore per MIRCrew Smart Indexer
+# =============================================================================
+
+# ===== CONFIGURAZIONE E CREDENZIALI =====
+# File di configurazione con credenziali sensibili
 .env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Backup dei file di configurazione
+.env.backup
+.env.bak
+.env.old
+
+# ===== COOKIE E SESSIONI =====
+# File di cookie per autenticazione MIRCrew
+*.pkl
+mircrew_cookies.pkl
+cookies.pkl
+session_cookies.pkl
+
+# Altri file di sessione/cache
+*.session
+*.cache
+
+# ===== LOGS =====
+# File di log dell'applicazione
+*.log
+logs/
+log/
+/logs/
+/log/
+
+# Log di Docker
+docker-compose.log
+container.log
+
+# ===== PYTHON =====
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== DOCKER =====
+# Immagini Docker esportate
+*.tar
+*.tar.gz
+mircrew-smart-indexer_*.tar
+docker-image-*.tar
+
+# Docker Compose override files
+docker-compose.override.yml
+docker-compose.local.yml
+docker-compose.dev.yml
+
+# Docker volumes e dati persistenti
+/data/
+/volumes/
+docker-data/
+
+# ===== CONFIGURAZIONI LOCALI =====
+# Directory di configurazione locale
+/config/
+config/local/
+config/development/
+config/production/
+
+# File di configurazione specifici per l'ambiente
+local.yml
+local.yaml
+development.yml
+production.yml
+
+# ===== BACKUP E TEMPORANEI =====
+# File di backup
+*.backup
+*.bak
+*.swp
+*.swo
+*~
+
+# File temporanei del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== EDITOR E IDE =====
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===== DATI SENSIBILI E CACHE =====
+# Database locali (se presenti)
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache di ricerca/scraping
+search_cache/
+scraping_cache/
+*.cache
+
+# File di stato dell'applicazione
+app_state.json
+indexer_state.pkl
+
+# ===== DEVELOPMENT E DEBUG =====
+# Debug files
+debug.log
+debug_*.log
+*.debug
+
+# Test files temporanei
+test_*.py
+temp_test_*
+
+# Profiling output
+*.prof
+*.pstats
+
+# ===== DOCUMENTAZIONE E OUTPUT =====
+# Generated documentation
+docs/_build/
+site/
+
+# Coverage reports
+htmlcov/
+
+# ===== MONITORAGGIO E METRICHE =====
+# Prometheus metrics (se implementati)
+metrics.txt
+*.metrics
+
+# Health check files
+health_check_*
+ping_*
+
+# ===== SCRIPTS E UTILITY =====
+# Script di deploy temporanei
+deploy_temp_*
+build_temp_*
+
+# Output di script
+script_output_*
+build_output_*
+
+# ===== PORTAINER E DEPLOYMENT =====
+# File di stack Portainer temporanei
+portainer-stack-*.yml
+stack-backup-*.yml
+
+# Certificati SSL/TLS (se presenti)
+*.pem
+*.key
+*.crt
+*.csr
+ssl/
+certs/
+
+# ===== ALTRI FILE SPECIFICI =====
+# File di PID (se l'app li genera)
+*.pid
+
+# File di lock
+*.lock
+
+# Dump di memoria
+core
+*.core
+
+# Archive files che potrebbero contenere credenziali
+*.zip
+*.rar
+*.7z
+archive_*
+
+# ===== IGNORARE FILE SPECIFICI MA MANTENERE DIRECTORY =====
+# Mantieni directory vuote ma ignora il contenuto
+**/logs/.gitkeep
+!**/logs/.gitkeep
+
+**/config/.gitkeep  
+!**/config/.gitkeep
