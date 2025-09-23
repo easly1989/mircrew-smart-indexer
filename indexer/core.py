@@ -5,9 +5,10 @@ import re
 import time
 import random
 import logging
-from typing import List, Dict, Optional
+import requests
+from typing import List, Dict, Optional, Tuple
 from datetime import datetime
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode, unquote
 from bs4 import BeautifulSoup
 
 from .auth import AuthManager
@@ -149,6 +150,12 @@ class MIRCrewSmartIndexer:
 
     def search_mircrew_smart_tv(self, query: str, season: Optional[int] = None) -> List[Dict]:
         """Perform smart TV search expanding threads into individual episodes."""
+        # Add input validation for season parameter
+        if season is not None:
+            if not isinstance(season, int) or season <= 0:
+                raise ValueError("Season must be a positive integer")
+            season = int(season)
+
         logger.info(f"Smart TV search: {query} S{season}")
         threads = self._find_series_threads(query, season, tv_search=True)
         if not threads:
@@ -160,7 +167,10 @@ class MIRCrewSmartIndexer:
             thread_id = thr['thread_id']
             logger.info(f"Expanding thread {thread_id} - '{thr['title']}'")
             try:
-                episodes = self._expand_thread_episodes(thread_id)
+                thread = self._get_thread_data(thread_id)
+                if not thread:
+                    continue
+                episodes = self._expand_thread_episodes(thread)
                 if not episodes:
                     continue
                 all_episodes.extend(episodes)
@@ -170,20 +180,43 @@ class MIRCrewSmartIndexer:
         logger.info(f"Total episodes returned: {len(all_episodes)}")
 
         # Sonarr-based filtering
-        if self.sonarr.sonarr_api and season is not None:  # Only if Sonarr is configured and season specified
+        if self.sonarr.is_configured() and season is not None:  # Only if Sonarr is configured and season specified
             try:
-                missing_episodes = self.sonarr.get_missing_episodes(query, season)
+                # Add retry mechanism for transient failures
+                missing_episodes = []
+                for attempt in range(3):
+                    try:
+                        missing_episodes = self.sonarr.get_missing_episodes(query, season)
+                        break
+                    except requests.exceptions.RequestException as e:
+                        if attempt < 2:
+                            logger.warning(f"Sonarr API attempt {attempt+1}/3 failed, retrying...")
+                            time.sleep(1)
+                        else:
+                            raise
+
                 if missing_episodes:
                     logger.info(f"Found {len(missing_episodes)} missing episodes from Sonarr")
+
+                    # Create set of missing (season, episode) tuples
                     missing_set = {(e['season'], e['episode']) for e in missing_episodes}
 
-                    # Filter episodes to only include missing ones
-                    filtered_episodes = [
-                        ep for ep in all_episodes
-                        if ep['season'] is not None
-                        and ep['episode'] is not None
-                        and (ep['season'], ep['episode']) in missing_set
-                    ]
+                    # Filter episodes
+                    filtered_episodes = []
+                    for ep in all_episodes:
+                        ep_season = ep.get('season')
+                        ep_episode = ep.get('episode')
+
+                        # Handle season packs (ep_episode is None)
+                        if ep_episode is None and ep_season is not None:
+                            # Check if any episode in this season is missing
+                            if any(s == ep_season and e is not None for s, e in missing_set):
+                                filtered_episodes.append(ep)
+                        # Handle individual episodes
+                        elif ep_season is not None and ep_episode is not None:
+                            if (ep_season, ep_episode) in missing_set:
+                                filtered_episodes.append(ep)
+
                     logger.info(f"Filtered from {len(all_episodes)} to {len(filtered_episodes)} episodes")
                     return filtered_episodes
                 else:
@@ -191,59 +224,91 @@ class MIRCrewSmartIndexer:
                     return []
             except Exception as e:
                 logger.error(f"Sonarr filtering failed: {str(e)}", exc_info=True)
+                # Log detailed debugging information
+                logger.debug(f"Query: {query}, Season: {season}")
+                logger.debug(f"All episodes: {all_episodes[:3]}...")
                 return all_episodes  # Fallback to unfiltered results
 
         return all_episodes  # Return unfiltered if Sonarr not configured
 
-    def _expand_thread_episodes(self, thread_id: str) -> List[Dict]:
-        """Expand a thread into individual episode entries."""
-        try:
-            self.click_like_if_present(thread_id)
-            thread_url = f"{self.auth.mircrew_url}/viewtopic.php?t={thread_id}"
-            response = self.auth.session.get(thread_url, timeout=30)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
+    def _expand_thread_episodes(self, thread: Dict) -> List[Dict]:
+        """Expand a thread into individual episodes using magnet URI info."""
+        episodes = []
+        magnet_links = thread.get('magnets', [])
+        
+        for magnet in magnet_links:
+            # Extract filename from magnet URI
+            magnet_uri = magnet.get('url', '')
+            magnet_filename = self._extract_filename_from_magnet(magnet_uri)
+            
+            # Extract season/episode from filename
+            season, episode = self._parse_episode_from_filename(magnet_filename)
+            
+            # Create episode entry with magnet filename as title
+            episode_data = {
+                'title': magnet_filename,  # Use magnet filename as title
+                'link': thread['link'],
+                'pubDate': thread['pubDate'],
+                'size': magnet.get('size', 0),
+                'enclosure_url': magnet_uri,
+                'season': season,
+                'episode': episode,
+                'category': thread.get('category', '5000'),
+                'seeders': magnet.get('seeders', 0),
+                'peers': magnet.get('peers', 0),
+                'guid': f"mircrew-{thread['id']}-{hash(magnet_uri)}"
+            }
+            episodes.append(episode_data)
+        
+        return episodes
 
-            episodes = []
-            # Find magnet links in the thread
-            magnet_links = soup.select('a.magnetBtn[href^="magnet:"]')
-            logger.info(f"Trovati {len(magnet_links)} magnet link nel thread {thread_id}")
+    def _extract_filename_from_magnet(self, magnet_uri: str) -> str:
+        """Extract filename from magnet URI."""
+        if not magnet_uri or not magnet_uri.startswith('magnet:?'):
+            return ""
 
-            thread_title = soup.select_one('h2.topic-title')
-            series_title = thread_title.get_text().strip() if thread_title else f"Thread {thread_id}"
+        # Remove 'magnet:?' prefix
+        query = magnet_uri[8:]
+        params = {}
+        for part in query.split('&'):
+            if '=' in part:
+                key, value = part.split('=', 1)
+                params[key] = unquote(value)
 
-            for a in magnet_links:
-                magnet_link = a['href']
-                # Find episode info from context
-                title_context = a.find_parent(['dd', 'div', 'li', 'td'])
-                context_text = title_context.get_text(separator=" ") if title_context else ""
+        # Return filename from dn parameter
+        return params.get('dn', "")
 
-                episode_info = self.parser.extract_episode_info(context_text)
-                if episode_info and 'season' in episode_info and 'episode' in episode_info:
-                    season = episode_info['season']
-                    episode = episode_info['episode']
-                    title = f"{series_title} S{season:02d}E{episode:02d}"
-                else:
-                    season = None
-                    episode = None
-                    title = series_title
+    def _parse_episode_from_filename(self, filename: str) -> Tuple[Optional[int], Optional[int]]:
+        """Parse season and episode numbers from filename."""
+        if not filename:
+            return None, None
 
-                episodes.append({
-                    'title': title,
-                    'season': season,
-                    'episode': episode,
-                    'thread_id': thread_id,
-                    'thread_url': thread_url,
-                    'magnet': magnet_link,
-                    'size': self.parser.estimate_size_from_title(series_title),
-                    'seeders': 1,
-                    'peers': 0,
-                    'category': self.parser.categorize_title(series_title),
-                    'publish_date': datetime.now().isoformat()
-                })
+        # Try common patterns: S01E02, S01.E02, Season.01.Episode.02, etc.
+        patterns = [
+            r"S(\d{1,2})\.?E(\d{1,2})",  # S01E02, S01.E02
+            r"(\d{1,2})x(\d{1,2})",       # 01x02
+            r"Season\.(\d{1,2})\.Episode\.(\d{1,2})",
+            r"Season_(\d{1,2})_Episode_(\d{1,2})",
+            r"(\d{1,2})(\d{2})"           # 0102 (season 1, episode 02)
+        ]
 
-            return episodes
+        for pattern in patterns:
+            match = re.search(pattern, filename, re.IGNORECASE)
+            if match:
+                try:
+                    season = int(match.group(1))
+                    episode = int(match.group(2))
+                    return season, episode
+                except (ValueError, TypeError):
+                    continue
 
-        except Exception as e:
-            logger.error(f"Thread expansion error: {e}")
-            return []
+        # Fallback to entire filename for pack detection
+        pack_match = re.search(r"(Season|Stagione|S)(\d{1,2})", filename, re.IGNORECASE)
+        if pack_match:
+            try:
+                season = int(pack_match.group(2))
+                return season, None  # Mark as season pack
+            except (ValueError, TypeError):
+                pass
+
+        return None, None

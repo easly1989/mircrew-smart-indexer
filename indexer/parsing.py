@@ -13,7 +13,12 @@ class EpisodeParser:
     """Handles episode information extraction and parsing."""
 
     def extract_episode_info(self, text: str) -> Optional[Dict]:
-        """Extract episode information from text using various patterns."""
+        """Extract season and episode information from text."""
+        # Handle empty/whitespace input
+        if not text or text.isspace():
+            logger.debug("Skipping episode extraction for empty text")
+            return None
+
         season_pack_patterns = [
             r'complete\s*season\s*(\d+)',
             r'full\s*season\s*(\d+)',
