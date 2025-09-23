@@ -41,7 +41,7 @@ class MIRCrewSmartIndexer:
         query_string = str(query_params)
         return any(indicator in query_string for indicator in tv_indicators)
 
-    def click_like_if_present(self, thread_id: str):
+    def click_like_if_present(self, thread_id: str) -> None:
         """Click like button on thread if present."""
         try:
             thread_url = f"{self.auth.mircrew_url}/viewtopic.php?t={thread_id}"
@@ -66,10 +66,10 @@ class MIRCrewSmartIndexer:
                 return
 
             # Find like button
-            like_anchor = post_buttons.find('a', id=re.compile(r'^lnk_thanks_post\d+'))
+            like_anchor = post_buttons.find('a', id=re.compile(r'^lnk_thanks_post\d+'))  # type: ignore
             if like_anchor:
-                like_href = like_anchor.get('href')
-                if like_href and like_href.startswith('./'):
+                like_href = like_anchor.get('href')  # type: ignore
+                if like_href and like_href.startswith('./'):  # type: ignore
                     like_href = like_href[2:]
                 full_like_url = f"{self.auth.mircrew_url}/{like_href}"
                 logger.info(f"Clicco il like: {full_like_url}")
@@ -83,7 +83,7 @@ class MIRCrewSmartIndexer:
         except Exception as e:
             logger.warning(f"Impossibile effettuare il like su thread {thread_id}: {e}")
 
-    def _find_series_threads(self, query: str, season: Optional[int] = None, tv_search: bool = False) -> List[Dict]:
+    def _find_series_threads(self, query: str, season: Optional[int] = None) -> List[Dict]:
         """Find series threads matching the query."""
         if not self.auth.login():
             logger.error("Cannot login to MIRCrew")
@@ -131,7 +131,7 @@ class MIRCrewSmartIndexer:
                 for title_link in topiclist.select('a.topictitle'):
                     logger.info(f"Abbiamo trovato un topictitle: {title_link.get_text()}")
                     thread_title = title_link.get_text().strip()
-                    thread_url = title_link.get('href', '').lstrip('./')
+                    thread_url = title_link.get('href', '').lstrip('./')  # type: ignore
                     thread_match = re.search(r't=(\d+)(?:&|$)', thread_url)
                     if thread_match:
                         thread_id = thread_match.group(1)
@@ -157,7 +157,7 @@ class MIRCrewSmartIndexer:
             season = int(season)
 
         logger.info(f"Smart TV search: {query} S{season}")
-        threads = self._find_series_threads(query, season, tv_search=True)
+        threads = self._find_series_threads(query, season)
         if not threads:
             logger.warning(f"No threads found for {query}")
             return []
