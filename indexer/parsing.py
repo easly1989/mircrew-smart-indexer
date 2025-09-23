@@ -2,8 +2,11 @@
 Parsing utilities for episode information extraction and categorization.
 """
 import re
+import logging
 from typing import List, Dict, Optional
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 class EpisodeParser:
@@ -57,6 +60,7 @@ class EpisodeParser:
                     'season': int(match.group(1)),
                     'episode': int(match.group(2))
                 }
+        logger.warning(f"Failed to extract episode info from text: '{text}'")
         return None
 
     def parse_episode_from_context(self, soup: BeautifulSoup, magnet: str) -> Optional[Dict]:

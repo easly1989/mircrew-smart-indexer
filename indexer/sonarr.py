@@ -21,6 +21,9 @@ class SonarrClient:
         if self.sonarr_api:
             self.session.headers.update({'X-Api-Key': self.sonarr_api})
 
+    def is_configured(self) -> bool:
+        return bool(self.sonarr_api)
+
     def get_missing_episodes(self, series_title: str, season: int) -> List[Dict]:
         """
         Retrieve missing episodes for a series from Sonarr.

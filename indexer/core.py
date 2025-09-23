@@ -168,7 +168,32 @@ class MIRCrewSmartIndexer:
                 logger.error(f"Error expanding thread {thread_id}: {e}")
 
         logger.info(f"Total episodes returned: {len(all_episodes)}")
-        return all_episodes
+
+        # Sonarr-based filtering
+        if self.sonarr.sonarr_api and season is not None:  # Only if Sonarr is configured and season specified
+            try:
+                missing_episodes = self.sonarr.get_missing_episodes(query, season)
+                if missing_episodes:
+                    logger.info(f"Found {len(missing_episodes)} missing episodes from Sonarr")
+                    missing_set = {(e['season'], e['episode']) for e in missing_episodes}
+
+                    # Filter episodes to only include missing ones
+                    filtered_episodes = [
+                        ep for ep in all_episodes
+                        if ep['season'] is not None
+                        and ep['episode'] is not None
+                        and (ep['season'], ep['episode']) in missing_set
+                    ]
+                    logger.info(f"Filtered from {len(all_episodes)} to {len(filtered_episodes)} episodes")
+                    return filtered_episodes
+                else:
+                    logger.info("No missing episodes found in Sonarr, returning no results")
+                    return []
+            except Exception as e:
+                logger.error(f"Sonarr filtering failed: {str(e)}", exc_info=True)
+                return all_episodes  # Fallback to unfiltered results
+
+        return all_episodes  # Return unfiltered if Sonarr not configured
 
     def _expand_thread_episodes(self, thread_id: str) -> List[Dict]:
         """Expand a thread into individual episode entries."""
@@ -184,6 +209,9 @@ class MIRCrewSmartIndexer:
             magnet_links = soup.select('a.magnetBtn[href^="magnet:"]')
             logger.info(f"Trovati {len(magnet_links)} magnet link nel thread {thread_id}")
 
+            thread_title = soup.select_one('h2.topic-title')
+            series_title = thread_title.get_text().strip() if thread_title else f"Thread {thread_id}"
+
             for a in magnet_links:
                 magnet_link = a['href']
                 # Find episode info from context
@@ -191,16 +219,19 @@ class MIRCrewSmartIndexer:
                 context_text = title_context.get_text(separator=" ") if title_context else ""
 
                 episode_info = self.parser.extract_episode_info(context_text)
-                if not episode_info:
-                    episode_info = {'season': 0, 'episode': 0}
-
-                thread_title = soup.select_one('h2.topic-title')
-                series_title = thread_title.get_text().strip() if thread_title else f"Thread {thread_id}"
+                if episode_info and 'season' in episode_info and 'episode' in episode_info:
+                    season = episode_info['season']
+                    episode = episode_info['episode']
+                    title = f"{series_title} S{season:02d}E{episode:02d}"
+                else:
+                    season = None
+                    episode = None
+                    title = series_title
 
                 episodes.append({
-                    'title': f"{series_title} S{episode_info.get('season', 0):02d}E{episode_info.get('episode', 0):02d}",
-                    'season': episode_info.get('season', 0),
-                    'episode': episode_info.get('episode', 0),
+                    'title': title,
+                    'season': season,
+                    'episode': episode,
                     'thread_id': thread_id,
                     'thread_url': thread_url,
                     'magnet': magnet_link,
