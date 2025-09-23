@@ -230,6 +230,38 @@ class MIRCrewSmartIndexer:
                 return all_episodes  # Fallback to unfiltered results
 
         return all_episodes  # Return unfiltered if Sonarr not configured
+    def _get_thread_data(self, thread_id: str) -> Dict:
+        try:
+            self.click_like_if_present(thread_id)
+            thread_url = f"{self.auth.mircrew_url}/viewtopic.php?t={thread_id}"
+            response = self.auth.session.get(thread_url, timeout=30)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            thread = {
+                'link': thread_url,
+                'pubDate': datetime.now().isoformat(),
+                'category': '5000',
+                'id': thread_id,
+                'magnets': []
+            }
+
+            magnet_links = soup.select('a.magnetBtn[href^="magnet:"]')
+            logger.info(f"Trovati {len(magnet_links)} magnet link nel thread {thread_id}")
+
+            for a in magnet_links:
+                thread['magnets'].append({
+                    'url': a['href'],
+                    'size': 0,
+                    'seeders': 1,
+                    'peers': 0
+                })
+
+            return thread
+
+        except Exception as e:
+            logger.error(f"Thread data fetch error: {e}")
+            return {}
 
     def _expand_thread_episodes(self, thread: Dict) -> List[Dict]:
         """Expand a thread into individual episodes using magnet URI info."""
