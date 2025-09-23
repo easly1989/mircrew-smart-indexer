@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9898/health', timeout=5)"]
-      interval: 30s
+      interval: 15m
       timeout: 10s
       retries: 3
       start_period: 30s

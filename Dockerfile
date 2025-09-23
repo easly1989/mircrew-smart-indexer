@@ -36,7 +36,7 @@ WORKDIR /app
 EXPOSE 9898
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=15m --timeout=10s --start-period=30s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:9898/health', timeout=5)" || exit 1
 
 # Comando di avvio
