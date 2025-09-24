@@ -22,7 +22,6 @@ def build_torznab_xml(results: List[Dict]) -> Response:
     """Build Torznab-compatible XML response from search results."""
     rss = ET.Element('rss', version='2.0')
     rss.set('xmlns:atom', 'http://www.w3.org/2005/Atom')
-    rss.set('xmlns:torznab', 'http://torznab.com/schemas/2015/feed')
     channel = ET.SubElement(rss, 'channel')
     ET.SubElement(channel, 'title').text = 'MIRCrew Smart'
     ET.SubElement(channel, 'description').text = 'MIRCrew Smart Indexer for TV Series'
@@ -38,21 +37,21 @@ def build_torznab_xml(results: List[Dict]) -> Response:
         enclosure.set('url', result.get('magnet', ''))
         enclosure.set('type', 'application/x-bittorrent')
         enclosure.set('length', str(result.get('size', 0)))
-        ET.SubElement(item, '{http://torznab.com/schemas/2015/feed}attr',
+        ET.SubElement(item, 'torznab:attr',
                       name='category',
                       value=str(result.get('category', '5000')))
-        ET.SubElement(item, '{http://torznab.com/schemas/2015/feed}attr',
+        ET.SubElement(item, 'torznab:attr',
                       name='seeders',
                       value=str(result.get('seeders', 1)))
-        ET.SubElement(item, '{http://torznab.com/schemas/2015/feed}attr',
+        ET.SubElement(item, 'torznab:attr',
                       name='peers',
                       value=str(result.get('peers', 0)))
         if 'season' in result and result['season']:
-            ET.SubElement(item, '{http://torznab.com/schemas/2015/feed}attr',
+            ET.SubElement(item, 'torznab:attr',
                           name='season',
                           value=str(result['season']))
         if 'episode' in result and result['episode']:
-            ET.SubElement(item, '{http://torznab.com/schemas/2015/feed}attr',
+            ET.SubElement(item, 'torznab:attr',
                           name='episode',
                           value=str(result['episode']))
     xml_str = ET.tostring(rss, encoding='unicode')
