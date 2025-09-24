@@ -8,7 +8,7 @@ from flask import Flask, request
 from config.settings import settings
 from utils.logging import setup_logging, get_logger
 from indexer.core import MIRCrewSmartIndexer
-from indexer.torznab import torznab_search, torznab_caps, torznab_error
+from indexer.torznab import torznab_search, torznab_caps, torznab_error, torznab_test
 from background.scheduler import start_background_tasks
 
 # Setup logging
@@ -39,6 +39,8 @@ def torznab_api():
         t = request.args.get('t', '')
         if t == 'caps':
             return torznab_caps()
+        elif t == 'test':
+            return torznab_test(indexer)
         elif t in ['search', 'tvsearch']:
             return torznab_search(indexer, request)
         else:

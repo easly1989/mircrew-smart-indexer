@@ -81,6 +81,12 @@ def torznab_caps() -> Response:
     return Response(caps_xml, mimetype='application/xml')
 
 
+def torznab_test(indexer) -> Response:
+    """Return Torznab response for test requests by performing test search."""
+    results = indexer.search_mircrew_smart_tv('', None)
+    return build_torznab_xml(results)
+
+
 def torznab_search(indexer, request) -> Response:
     """Handle Torznab search requests."""
     query = request.args.get('q', '')

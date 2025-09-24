@@ -113,9 +113,7 @@ docker ps --filter "name=mircrew-smart"
    | Field | Value |
    |-------|-------|
    | Name | `MIRCrew Smart` |
-   | URL | `http://<docker-host>:9898/` |
-   | API Path | `/` |
-   | API Key | Your Sonarr API Key |
+   | URL | `http://<docker-host>:9898/api` |
    | Categories | `5000` (TV), `5070` (Anime) |
 
 4. Test the connection and save
