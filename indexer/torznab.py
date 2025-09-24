@@ -22,6 +22,7 @@ def build_torznab_xml(results: List[Dict]) -> Response:
     """Build Torznab-compatible XML response from search results."""
     rss = ET.Element('rss', version='2.0')
     rss.set('xmlns:atom', 'http://www.w3.org/2005/Atom')
+    rss.set('xmlns:torznab', 'http://torznab.com/schemas/2015/feed')
     channel = ET.SubElement(rss, 'channel')
     ET.SubElement(channel, 'title').text = 'MIRCrew Smart'
     ET.SubElement(channel, 'description').text = 'MIRCrew Smart Indexer for TV Series'
