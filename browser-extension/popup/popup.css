@@ -1,0 +1,129 @@
+/* Popup styles for Sonarr Smart Indexer Extension */
+
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --section-bg: white;
+  --border-color: #ddd;
+  --button-bg: #007bff;
+  --button-hover: #0056b3;
+  --success-color: #28a745;
+  --error-color: #dc3545;
+}
+
+body {
+  width: 300px;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --section-bg: #2a2a2a;
+  --border-color: #555;
+  --button-bg: #0d6efd;
+  --button-hover: #0b5ed7;
+  --success-color: #198754;
+  --error-color: #dc3545;
+}
+
+#popup-container {
+  padding: 16px;
+}
+
+h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+.status-section {
+  margin-bottom: 16px;
+}
+
+#status {
+  font-size: 14px;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+#status-text {
+  font-weight: bold;
+}
+
+.status-connected {
+  color: var(--success-color);
+}
+
+.status-authenticated {
+  color: var(--button-bg);
+}
+
+.status-error {
+  color: var(--error-color);
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-section {
+  margin-top: 16px;
+}
+
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px;
+  color: var(--text-color);
+}
+
+legend {
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+input[type="radio"] {
+  margin: 0;
+}
+
+input:focus, button:focus, select:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+input[type="checkbox"], input[type="radio"] {
+  margin: 0;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--button-hover);
+}

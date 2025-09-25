@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options - Sonarr Smart Indexer</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div id="options-container">
+    <h2>Sonarr Smart Indexer Options</h2>
+
+    <div class="section">
+      <h3>API Configuration</h3>
+      <div class="form-group">
+        <label for="api-token">API Token:</label>
+        <input type="password" id="api-token" placeholder="Enter your API token">
+        <button id="save-token">Save Token</button>
+      </div>
+      <div id="token-status" class="status-message" aria-live="polite"></div>
+    </div>
+
+    <div class="section">
+      <h3>Server URLs</h3>
+      <div class="form-group">
+        <label for="sonarr-url">Sonarr URL:</label>
+        <input type="url" id="sonarr-url" placeholder="http://localhost:8989">
+      </div>
+      <div class="form-group">
+        <label for="indexer-url">Indexer URL:</label>
+        <input type="url" id="indexer-url" placeholder="http://localhost:8080">
+      </div>
+      <button id="save-urls">Save URLs</button>
+      <div id="urls-status" class="status-message" aria-live="polite"></div>
+    </div>
+
+    <div class="section">
+      <h3>Notifications</h3>
+      <div class="form-group">
+        <label for="notification-threshold">Notification Threshold:</label>
+        <input type="number" id="notification-threshold" min="1" placeholder="10">
+      </div>
+      <button id="save-threshold">Save Threshold</button>
+      <div id="threshold-status" class="status-message" aria-live="polite"></div>
+    </div>
+
+    <div class="section">
+      <h3>Appearance</h3>
+      <div class="form-group">
+        <label for="theme">Theme:</label>
+        <select id="theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="system">System</option>
+        </select>
+      </div>
+      <button id="save-theme">Save Theme</button>
+      <div id="theme-status" class="status-message" aria-live="polite"></div>
+    </div>
+
+    <div class="section">
+      <h3>Settings Management</h3>
+      <button id="export-settings">Export Settings</button>
+      <button id="import-settings">Import Settings</button>
+      <div id="settings-status" class="status-message" aria-live="polite"></div>
+    </div>
+
+    <div class="section">
+      <h3>Extension Status</h3>
+      <div id="extension-status">Checking...</div>
+      <button id="test-connection">Test Connection</button>
+    </div>
+
+    <div class="section">
+      <h3>About</h3>
+      <p>Enhances Sonarr's Interactive Search with smart indexing capabilities.</p>
+      <p>Version: 1.0.0</p>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

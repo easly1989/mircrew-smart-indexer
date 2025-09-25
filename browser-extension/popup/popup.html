@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sonarr Smart Indexer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup-container">
+    <h3>Sonarr Smart Indexer</h3>
+
+    <div class="status-section">
+      <div id="status">Status: <span id="status-text">Checking...</span></div>
+    </div>
+
+    <div class="controls-section">
+      <label>
+        <input type="checkbox" id="enabled-toggle">
+        Extension Enabled
+      </label>
+
+      <div class="notification-section">
+        <fieldset role="radiogroup" aria-labelledby="notifications-legend">
+          <legend id="notifications-legend">Notification Preferences</legend>
+          <label>
+            <input type="radio" name="notifications" value="browser" aria-describedby="notifications-legend">
+            Browser Notifications
+          </label>
+          <label>
+            <input type="radio" name="notifications" value="ui" aria-describedby="notifications-legend">
+            UI Notifications
+          </label>
+          <label>
+            <input type="radio" name="notifications" value="both" aria-describedby="notifications-legend">
+            Both
+          </label>
+        </fieldset>
+      </div>
+
+      <button id="options-btn">Open Options</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

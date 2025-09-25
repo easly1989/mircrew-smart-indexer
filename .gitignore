@@ -265,3 +265,29 @@ archive_*
 
 **/config/.gitkeep  
 !**/config/.gitkeep
+
+# ===== BROWSER EXTENSION =====
+# Browser extension artifacts
+browser-extension/dist/
+browser-extension/*.crx
+browser-extension/*.xpi
+browser-extension/*.zip
+
+# ===== NODE.JS =====
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# Additional IDE patterns
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Additional environment files
+.env.*.local

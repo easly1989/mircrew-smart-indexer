@@ -251,7 +251,6 @@ class MIRCrewSmartIndexer:
                 }]
             }
         try:
-            self.click_like_if_present(thread_id)
             thread_url = f"{self.auth.mircrew_url}/viewtopic.php?t={thread_id}"
             response = self.auth.session.get(thread_url, timeout=30)
             response.raise_for_status()

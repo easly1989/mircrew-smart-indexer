@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Sonarr Smart Indexer Extension",
+  "version": "1.0",
+  "description": "Enhances Sonarr's Interactive Search with smart indexing from mircrew-smart-indexer",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://localhost:8989/*",
+    "http://localhost:9898/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:8989/*"],
+      "js": [
+        "content-scripts/like-button.js",
+        "content-scripts/tree-view.js",
+        "content-scripts/notifications.js",
+        "content-scripts/sonarr-interactive-search.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
