@@ -17,7 +17,8 @@ from models import SessionLocal, UserThreadLikes, ThreadMetadataCache, LikeHisto
 from background.scheduler import start_background_tasks
 
 # Setup logging
-setup_logging()
+log_file = '/config/smart-indexer.log' if settings.running_in_docker else 'smart-indexer.log'
+setup_logging(log_file=log_file)
 logger = get_logger(__name__)
 
 # Initialize Flask app
@@ -167,11 +168,15 @@ def like_thread(thread_id):
             cache.set_user_like(thread_id, user_id)
             new_count = cache.increment_like_count(thread_id)
         else:
-            # Unlike
-            existing_like.unliked_at = datetime.utcnow()
-            cache.remove_user_like(thread_id, user_id)
-            cache.invalidate_user_likes_cache(user_id)
-            new_count = cache.decrement_like_count(thread_id)
+            # Unlike - we know existing_like is not None because of the earlier check
+            if existing_like is not None:
+                existing_like.unliked_at = datetime.utcnow()
+                cache.remove_user_like(thread_id, user_id)
+                cache.invalidate_user_likes_cache(user_id)
+                new_count = cache.decrement_like_count(thread_id)
+            else:
+                # This should never happen due to earlier validation
+                return jsonify({"error": "Internal server error"}), 500
 
         # Record in history
         history = LikeHistory(
@@ -185,6 +190,7 @@ def like_thread(thread_id):
         # Update metadata cache
         metadata = db.query(ThreadMetadataCache).filter_by(thread_id=thread_id).first()
         if metadata:
+            # Update like count and last update timestamp
             metadata.like_count = new_count
             metadata.last_update = datetime.utcnow()
 

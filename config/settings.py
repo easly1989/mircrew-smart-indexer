@@ -22,10 +22,10 @@ class Settings:
     running_in_docker: bool = os.getenv('RUNNING_IN_DOCKER', 'false').lower() == 'true'
 
     # Database settings
-    database_url: str = os.getenv('DATABASE_URL', 'postgresql://mircrew:password@localhost:5432/mircrew_indexer')
+    @property
+    def database_url(self) -> str:
+        return os.getenv('DATABASE_URL', 'sqlite:////config/smart-indexer.db' if self.running_in_docker else 'sqlite:///smart-indexer.db')
 
-    # Redis settings
-    redis_url: str = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
     # Cache TTL settings (in seconds)
     thread_metadata_ttl: int = int(os.getenv('THREAD_METADATA_TTL', str(24 * 3600)))  # 24 hours

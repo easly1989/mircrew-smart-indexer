@@ -33,13 +33,15 @@ volumes:
 | `MIRCREW_BASE_URL` | No | `https://mircrew-releases.org` | MIRCrew forum base URL |
 | `SONARR_URL` | No | `http://sonarr:8989` | Sonarr API endpoint URL |
 | `SONARR_API_KEY` | No | - | Sonarr API key for episode filtering |
-| `DATABASE_URL` | No | `postgresql://mircrew:password@localhost:5432/mircrew_indexer` | PostgreSQL connection string |
-| `REDIS_URL` | No | `redis://localhost:6379/0` | Redis connection string for caching |
+| `DATABASE_URL` | No | `sqlite:///config/mircrew_indexer.db` | Database connection string |
 | `PORT` | No | `9898` | Port for the web server |
 | `SECRET_KEY` | No | `dev-secret-key` | Flask secret key for sessions |
 | `RUNNING_IN_DOCKER` | No | `false` | Set to `true` when running in Docker |
 
 #### Cache Configuration
+
+The application uses in-memory caching with configurable TTL values for improved performance:
+
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -111,8 +113,7 @@ python -c "from migrations import upgrade; upgrade()"
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL database
-- Redis (optional, for caching)
+- SQLite database (stored in /config volume when using Docker)
 - Docker and Docker Compose (for containerized deployment)
 
 ### Core Dependencies
@@ -123,7 +124,6 @@ The application requires the following Python packages:
 - beautifulsoup4 4.12.2
 - lxml 4.9.3
 - SQLAlchemy (for database operations)
-- redis (for caching)
 
 ### Local Development Setup
 
@@ -378,15 +378,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 - Run migrations: `python -c "from migrations import upgrade; upgrade()"`
 - Check database permissions
 
-#### 3. Redis Connection Issues
-**Symptoms**: Caching errors, slower performance
-
-**Solutions**:
-- Ensure Redis is running on the configured port
-- Verify `REDIS_URL` is correct
-- Redis is optional - the app will work without it but slower
-
-#### 4. Extension Not Working
+#### 3. Extension Not Working
 **Symptoms**: Like buttons don't appear, no notifications
 
 **Solutions**:
@@ -396,7 +388,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 - Check browser console for JavaScript errors
 - Verify API token is set in extension options
 
-#### 5. WebSocket Connection Issues
+#### 4. WebSocket Connection Issues
 **Symptoms**: Real-time updates not working
 
 **Solutions**:
@@ -404,7 +396,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 - Extension will fall back to polling
 - Check network connectivity between browser and indexer
 
-#### 6. Sonarr Integration Issues
+#### 5. Sonarr Integration Issues
 **Symptoms**: No episode filtering, search errors
 
 **Solutions**:

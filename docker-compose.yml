@@ -16,7 +16,6 @@ services:
       - PORT=9898
     volumes:
       - /opt/mircrew-smart-indexer/config:/config
-      - /opt/mircrew-smart-indexer/logs:/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:9898/health', timeout=5)"]
@@ -25,9 +24,6 @@ services:
       retries: 3
       start_period: 30s
 
-volumes:
-  mircrew_smart_config:
-    driver: local
 
 networks:
   default:
