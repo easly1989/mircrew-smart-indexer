@@ -19,7 +19,7 @@ class Settings:
 
     # Server settings
     port: int = int(os.getenv('PORT', '9898'))
-    running_in_docker: bool = os.getenv('RUNNING_IN_DOCKER', 'false').lower() == 'true'
+    running_in_docker: bool = os.getenv('RUNNING_IN_DOCKER', 'true').lower() == 'true'
 
     # Database settings
     @property
