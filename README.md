@@ -35,8 +35,7 @@ volumes:
 | `SONARR_API_KEY` | No | - | Sonarr API key for episode filtering |
 | `DATABASE_URL` | No | `sqlite:///config/mircrew_indexer.db` | Database connection string |
 | `PORT` | No | `9898` | Port for the web server |
-| `SECRET_KEY` | No | `dev-secret-key` | Flask secret key for sessions |
-| `RUNNING_IN_DOCKER` | No | `false` | Set to `true` when running in Docker |
+| `RUNNING_IN_DOCKER` | No | `true` | Set to `true` when running in Docker |
 
 #### Cache Configuration
 
